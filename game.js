@@ -17,6 +17,20 @@ class MainScene extends Phaser.Scene {
 
   create() {
     this.cameras.main.setBackgroundColor("#050812");
+    this.stars = [];
+
+for (let i = 0; i < 100; i++) {
+  const star = this.add.circle(
+    Phaser.Math.Between(0, this.scale.width),
+    Phaser.Math.Between(0, this.scale.height),
+    Phaser.Math.Between(1, 2),
+    0xffffff,
+    Phaser.Math.FloatBetween(0.3, 1)
+  );
+
+  star.speed = Phaser.Math.FloatBetween(0.5, 2);
+  this.stars.push(star);
+}
 
     this.add.text(24, 20, "KOZMİK ROTA: SOLAR MISSION", {
       fontFamily: "Arial",
@@ -58,7 +72,16 @@ class MainScene extends Phaser.Scene {
 
       this.lastPointerX = pointer.x;
       this.lastPointerY = pointer.y;
+update() {
+  for (const star of this.stars) {
+    star.x -= star.speed;
 
+    if (star.x < 0) {
+      star.x = this.scale.width;
+      star.y = Phaser.Math.Between(0, this.scale.height);
+    }
+  }
+}
       this.keepPlayerInsideScreen();
     });
 
