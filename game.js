@@ -56,7 +56,7 @@ class MainScene extends Phaser.Scene {
   }
 
   create() {
-    this.initializeValues();
+    this.resetState();
 
     this.cameras.main.setBackgroundColor("#020805");
 
@@ -75,14 +75,18 @@ class MainScene extends Phaser.Scene {
     );
   }
 
-  initializeValues() {
+  resetState() {
     this.fuel = 100;
     this.shield = 100;
     this.ammo = 0;
     this.score = 0;
 
     this.missionElapsed = 0;
+
+    // Normal oyunda 110 saniye sonra boss çıkar.
+    // Hızlı test için geçici olarak 20 yapabilirsin.
     this.bossStartTime = 110;
+
     this.progress = 0;
 
     this.correctAnswers = 0;
@@ -102,7 +106,7 @@ class MainScene extends Phaser.Scene {
     this.boss = null;
     this.bossHits = 0;
     this.bossRequiredHits = 3;
-    this.bossBaseY = 470;
+    this.bossBaseY = 475;
     this.bossFireTimer = null;
 
     this.pickupSchedule = [];
@@ -129,7 +133,7 @@ class MainScene extends Phaser.Scene {
   createStars() {
     this.stars = [];
 
-    for (let i = 0; i < 135; i++) {
+    for (let i = 0; i < 135; i += 1) {
       const star = this.add.circle(
         Phaser.Math.Between(0, 540),
         Phaser.Math.Between(145, 950),
@@ -150,18 +154,50 @@ class MainScene extends Phaser.Scene {
   preparePickupSchedule() {
     /*
       Toplam:
-      4 weapon ikonu
-      3 energy ikonu
+      4 silah ikonu
+      3 enerji ikonu
+
+      Her silah ikonu +2 lazer verir.
+      Enerji ikonlarında soru çıkar.
+      Sorular arka arkaya gelmez.
     */
 
     this.pickupSchedule = [
-      { time: 10, type: "weapon", spawned: false },
-      { time: 24, type: "energy", spawned: false },
-      { time: 38, type: "weapon", spawned: false },
-      { time: 54, type: "energy", spawned: false },
-      { time: 68, type: "weapon", spawned: false },
-      { time: 84, type: "energy", spawned: false },
-      { time: 98, type: "weapon", spawned: false }
+      {
+        time: 10,
+        type: "weapon",
+        spawned: false
+      },
+      {
+        time: 24,
+        type: "energy",
+        spawned: false
+      },
+      {
+        time: 38,
+        type: "weapon",
+        spawned: false
+      },
+      {
+        time: 54,
+        type: "energy",
+        spawned: false
+      },
+      {
+        time: 68,
+        type: "weapon",
+        spawned: false
+      },
+      {
+        time: 84,
+        type: "energy",
+        spawned: false
+      },
+      {
+        time: 98,
+        type: "weapon",
+        spawned: false
+      }
     ];
   }
 
@@ -170,7 +206,11 @@ class MainScene extends Phaser.Scene {
       {
         question:
           "Merkür, Güneş’e en yakın kaçıncı gezegendir?",
-        answers: ["Birinci", "İkinci", "Üçüncü"],
+        answers: [
+          "Birinci",
+          "İkinci",
+          "Üçüncü"
+        ],
         correctIndex: 0,
         information:
           "Merkür, Güneş’e en yakın gezegendir."
@@ -178,7 +218,11 @@ class MainScene extends Phaser.Scene {
       {
         question:
           "Merkür’ün Güneş çevresindeki bir turu yaklaşık kaç Dünya günü sürer?",
-        answers: ["88 gün", "365 gün", "687 gün"],
+        answers: [
+          "88 gün",
+          "365 gün",
+          "687 gün"
+        ],
         correctIndex: 0,
         information:
           "Merkür, Güneş çevresindeki turunu yaklaşık 88 Dünya gününde tamamlar."
@@ -186,7 +230,11 @@ class MainScene extends Phaser.Scene {
       {
         question:
           "Güneş Sistemi’nin en küçük gezegeni hangisidir?",
-        answers: ["Merkür", "Mars", "Venüs"],
+        answers: [
+          "Merkür",
+          "Mars",
+          "Venüs"
+        ],
         correctIndex: 0,
         information:
           "Merkür, Güneş Sistemi’nin en küçük gezegenidir."
@@ -206,7 +254,11 @@ class MainScene extends Phaser.Scene {
       {
         question:
           "Merkür’ün yüzeyi en çok hangi gök cismini andırır?",
-        answers: ["Ay", "Jüpiter", "Satürn"],
+        answers: [
+          "Ay",
+          "Jüpiter",
+          "Satürn"
+        ],
         correctIndex: 0,
         information:
           "Merkür’ün kraterli yüzeyi Ay’a benzer."
@@ -214,7 +266,11 @@ class MainScene extends Phaser.Scene {
       {
         question:
           "Merkür gezegeni adını hangi mitolojideki tanrıdan alır?",
-        answers: ["Roma", "Mısır", "İskandinav"],
+        answers: [
+          "Roma",
+          "Mısır",
+          "İskandinav"
+        ],
         correctIndex: 0,
         information:
           "Merkür adı Roma mitolojisindeki Mercurius’tan gelir."
@@ -234,7 +290,11 @@ class MainScene extends Phaser.Scene {
       {
         question:
           "Roma mitolojisindeki Merkür’ün Yunan karşılığı kimdir?",
-        answers: ["Hermes", "Ares", "Poseidon"],
+        answers: [
+          "Hermes",
+          "Ares",
+          "Poseidon"
+        ],
         correctIndex: 0,
         information:
           "Merkür’ün Yunan mitolojisindeki karşılığı Hermes’tir."
@@ -253,6 +313,11 @@ class MainScene extends Phaser.Scene {
       }
     ];
 
+    /*
+      Dokuz sorudan rastgele üç soru seçilir.
+      shift() kullanıldığı için aynı oyun içinde
+      aynı soru tekrar etmez.
+    */
     this.normalQuestionPool =
       Phaser.Utils.Array.Shuffle(
         [...this.mercuryQuestions]
@@ -306,14 +371,15 @@ class MainScene extends Phaser.Scene {
       "altay-x"
     );
 
+    // Küçültülmüş Altay-X.
     this.player.setScale(0.105);
     this.player.setDepth(20);
     this.player.body.setAllowGravity(false);
     this.player.setImmovable(true);
 
     /*
-      Oyuncu görseli küçük olsa da pickup alma alanı
-      daha büyük bırakıldı.
+      Araç küçük görünse de pickup alma alanı
+      geniş tutulur.
     */
     this.player.body.setSize(
       this.player.width * 0.9,
@@ -341,7 +407,8 @@ class MainScene extends Phaser.Scene {
       12,
       "KOZMİK ROTA // MERKÜR",
       {
-        fontFamily: '"Courier New", monospace',
+        fontFamily:
+          '"Courier New", monospace',
         fontSize: "20px",
         color: "#b7ffb2",
         stroke: "#002800",
@@ -354,7 +421,8 @@ class MainScene extends Phaser.Scene {
       48,
       "YAKIT: 100%",
       {
-        fontFamily: '"Courier New", monospace',
+        fontFamily:
+          '"Courier New", monospace',
         fontSize: "15px",
         color: "#ffe066"
       }
@@ -365,7 +433,8 @@ class MainScene extends Phaser.Scene {
       48,
       "KALKAN: 100%",
       {
-        fontFamily: '"Courier New", monospace',
+        fontFamily:
+          '"Courier New", monospace',
         fontSize: "15px",
         color: "#61dafb"
       }
@@ -376,7 +445,8 @@ class MainScene extends Phaser.Scene {
       48,
       "LAZER: 0",
       {
-        fontFamily: '"Courier New", monospace',
+        fontFamily:
+          '"Courier New", monospace',
         fontSize: "15px",
         color: "#ff79d1"
       }
@@ -387,7 +457,8 @@ class MainScene extends Phaser.Scene {
       77,
       "ROTA: 0%",
       {
-        fontFamily: '"Courier New", monospace',
+        fontFamily:
+          '"Courier New", monospace',
         fontSize: "15px",
         color: "#7cff7a"
       }
@@ -398,20 +469,20 @@ class MainScene extends Phaser.Scene {
       77,
       "SKOR: 0",
       {
-        fontFamily: '"Courier New", monospace',
+        fontFamily:
+          '"Courier New", monospace',
         fontSize: "15px",
         color: "#ffad5c"
       }
     );
 
-    this.fuelBarBackground =
-      this.add.rectangle(
-        18,
-        103,
-        220,
-        7,
-        0x443b18
-      ).setOrigin(0, 0.5);
+    this.add.rectangle(
+      18,
+      103,
+      220,
+      7,
+      0x443b18
+    ).setOrigin(0, 0.5);
 
     this.fuelBar = this.add.rectangle(
       18,
@@ -421,14 +492,13 @@ class MainScene extends Phaser.Scene {
       0xffe066
     ).setOrigin(0, 0.5);
 
-    this.shieldBarBackground =
-      this.add.rectangle(
-        302,
-        103,
-        220,
-        7,
-        0x143546
-      ).setOrigin(0, 0.5);
+    this.add.rectangle(
+      302,
+      103,
+      220,
+      7,
+      0x143546
+    ).setOrigin(0, 0.5);
 
     this.shieldBar = this.add.rectangle(
       302,
@@ -443,7 +513,8 @@ class MainScene extends Phaser.Scene {
       137,
       "SİSTEMLER AKTİF",
       {
-        fontFamily: '"Courier New", monospace',
+        fontFamily:
+          '"Courier New", monospace',
         fontSize: "14px",
         color: "#b7ffb2",
         align: "center"
@@ -455,7 +526,8 @@ class MainScene extends Phaser.Scene {
       925,
       "DOKUN: ATEŞ // SÜRÜKLE: HAREKET",
       {
-        fontFamily: '"Courier New", monospace',
+        fontFamily:
+          '"Courier New", monospace',
         fontSize: "13px",
         color: "#6fae70",
         align: "center"
@@ -574,10 +646,6 @@ class MainScene extends Phaser.Scene {
       this
     );
 
-    /*
-      Weapon ve energy ikonlarının alınmasını
-      sağlayan ana overlap.
-    */
     this.physics.add.overlap(
       this.player,
       this.pickups,
@@ -661,9 +729,20 @@ class MainScene extends Phaser.Scene {
 
     asteroid.body.setAllowGravity(false);
 
-    asteroid.setData("destroyed", false);
-    asteroid.setData("falling", false);
-    asteroid.setData("hitPlayer", false);
+    asteroid.setData(
+      "destroyed",
+      false
+    );
+
+    asteroid.setData(
+      "falling",
+      false
+    );
+
+    asteroid.setData(
+      "hitPlayer",
+      false
+    );
 
     asteroid.body.setSize(
       asteroid.width * 0.72,
@@ -685,30 +764,28 @@ class MainScene extends Phaser.Scene {
         texture
       );
 
-    /*
-      İkon biraz daha görünür yapıldı.
-    */
     pickup.setScale(0.13);
     pickup.setDepth(25);
     pickup.setVelocityX(-125);
     pickup.body.setAllowGravity(false);
 
-    pickup.setData("type", type);
-    pickup.setData("collected", false);
+    pickup.setData(
+      "type",
+      type
+    );
+
+    pickup.setData(
+      "collected",
+      false
+    );
 
     /*
-      Pickup alma sorununun ana düzeltmesi:
-      İkonun fizik alanı görselden daha geniş.
+      Weapon ikonunun alınmama sorununa karşı
+      fizik alanı büyütüldü.
     */
-    const pickupBodyWidth =
-      pickup.width * 1.35;
-
-    const pickupBodyHeight =
-      pickup.height * 1.35;
-
     pickup.body.setSize(
-      pickupBodyWidth,
-      pickupBodyHeight,
+      pickup.width * 1.35,
+      pickup.height * 1.35,
       true
     );
 
@@ -772,12 +849,18 @@ class MainScene extends Phaser.Scene {
       return;
     }
 
-    pickup.setData("collected", true);
+    pickup.setData(
+      "collected",
+      true
+    );
 
     const type =
       pickup.getData("type");
 
-    pickup.disableBody(true, true);
+    pickup.disableBody(
+      true,
+      true
+    );
 
     if (type === "weapon") {
       this.ammo += 2;
@@ -834,7 +917,8 @@ class MainScene extends Phaser.Scene {
     const laser =
       this.playerBullets.create(
         this.player.x +
-          this.player.displayWidth * 0.45,
+          this.player.displayWidth *
+            0.45,
         this.player.y,
         "laser-shot"
       );
@@ -863,10 +947,19 @@ class MainScene extends Phaser.Scene {
     laser.setData("hit", true);
     laser.destroy();
 
-    asteroid.setData("destroyed", true);
-    asteroid.setData("falling", true);
+    asteroid.setData(
+      "destroyed",
+      true
+    );
 
-    asteroid.setTint(0xff6b25);
+    asteroid.setData(
+      "falling",
+      true
+    );
+
+    asteroid.setTint(
+      0xff6b25
+    );
 
     asteroid.setVelocityX(
       Phaser.Math.Between(-35, 20)
@@ -926,16 +1019,20 @@ class MainScene extends Phaser.Scene {
 
     asteroid.destroy();
 
+    // Meteor çarpınca kalkan yüzde 10 düşer.
     this.shield = Math.max(
       0,
-      this.shield - 20
+      this.shield - 10
     );
 
     this.statusText.setText(
-      "METEOR ÇARPMASI // KALKAN -20"
+      "METEOR ÇARPMASI // KALKAN -10"
     );
 
-    this.player.setTint(0xff4545);
+    this.player.setTint(
+      0xff4545
+    );
+
     this.cameras.main.shake(
       170,
       0.013
@@ -1003,58 +1100,68 @@ class MainScene extends Phaser.Scene {
       this.bossFireTimer.paused = true;
     }
 
-    const answers = question.answers
-      .map((text, index) => ({
-        text,
-        correct:
-          index === question.correctIndex
-      }))
-      .sort(() => Math.random() - 0.5);
+    const answers =
+      question.answers
+        .map(
+          (text, index) => ({
+            text,
+            correct:
+              index ===
+              question.correctIndex
+          })
+        )
+        .sort(
+          () =>
+            Math.random() - 0.5
+        );
 
-    const overlay = this.add.rectangle(
-      270,
-      480,
-      540,
-      960,
-      0x010501,
-      0.96
-    ).setDepth(2000);
+    const overlay =
+      this.add.rectangle(
+        270,
+        480,
+        540,
+        960,
+        0x010501,
+        0.96
+      ).setDepth(2000);
 
-    const panel = this.add.rectangle(
-      270,
-      480,
-      500,
-      610,
-      0x061408,
-      1
-    )
-      .setStrokeStyle(
-        3,
-        isFinal
-          ? 0xff8738
-          : 0x66ff66,
+    const panel =
+      this.add.rectangle(
+        270,
+        480,
+        500,
+        610,
+        0x061408,
         1
       )
-      .setDepth(2001);
+        .setStrokeStyle(
+          3,
+          isFinal
+            ? 0xff8738
+            : 0x66ff66,
+          1
+        )
+        .setDepth(2001);
 
-    const header = this.add.text(
-      270,
-      225,
-      isFinal
-        ? "MERKÜR SON PROTOKOLÜ"
-        : "ENERJİ SORUSU",
-      {
-        fontFamily:
-          '"Courier New", monospace',
-        fontSize: "22px",
-        color: isFinal
-          ? "#ffad67"
-          : "#b7ffb2",
-        align: "center"
-      }
-    )
-      .setOrigin(0.5)
-      .setDepth(2002);
+    const header =
+      this.add.text(
+        270,
+        225,
+        isFinal
+          ? "MERKÜR SON PROTOKOLÜ"
+          : "ENERJİ SORUSU",
+        {
+          fontFamily:
+            '"Courier New", monospace',
+          fontSize: "22px",
+          color: isFinal
+            ? "#ffad67"
+            : "#b7ffb2",
+          align: "center"
+        }
+      )
+        .setOrigin(0.5)
+        .setDepth(2002);
 
     const questionText =
       this.add.text(
@@ -1106,23 +1213,24 @@ class MainScene extends Phaser.Scene {
             })
             .setDepth(2002);
 
-        const text = this.add.text(
-          270,
-          y,
-          answer.text,
-          {
-            fontFamily:
-              '"Courier New", monospace',
-            fontSize: "20px",
-            color: "#caffc8",
-            align: "center",
-            wordWrap: {
-              width: 390
+        const text =
+          this.add.text(
+            270,
+            y,
+            answer.text,
+            {
+              fontFamily:
+                '"Courier New", monospace',
+              fontSize: "20px",
+              color: "#caffc8",
+              align: "center",
+              wordWrap: {
+                width: 390
+              }
             }
-          }
-        )
-          .setOrigin(0.5)
-          .setDepth(2003);
+          )
+            .setOrigin(0.5)
+            .setDepth(2003);
 
         button.on(
           "pointerdown",
@@ -1153,9 +1261,11 @@ class MainScene extends Phaser.Scene {
 
     if (isCorrect) {
       this.correctAnswers += 1;
-      this.score += isFinal
-        ? 500
-        : 250;
+
+      this.score +=
+        isFinal
+          ? 500
+          : 250;
 
       this.showLargeResult(
         "DOĞRU CEVAP!",
@@ -1174,13 +1284,19 @@ class MainScene extends Phaser.Scene {
         return;
       }
 
+      // Doğru cevapta hem yakıt hem kalkan yüzde 10 artar.
       this.fuel = Math.min(
         100,
-        this.fuel + 18
+        this.fuel + 10
+      );
+
+      this.shield = Math.min(
+        100,
+        this.shield + 10
       );
 
       this.statusText.setText(
-        "DOĞRU CEVAP // YAKIT +18"
+        "DOĞRU CEVAP // YAKIT +10 // KALKAN +10"
       );
     } else {
       this.wrongAnswers += 1;
@@ -1194,7 +1310,11 @@ class MainScene extends Phaser.Scene {
       if (isFinal) {
         this.fuel = Math.max(
           1,
-          this.fuel - 12
+          this.fuel - 10
+        );
+
+        this.statusText.setText(
+          "ERİŞİM REDDEDİLDİ // YAKIT -10"
         );
 
         this.updateHUD();
@@ -1260,7 +1380,9 @@ class MainScene extends Phaser.Scene {
         270,
         480,
         500,
-        information ? 250 : 135,
+        information
+          ? 250
+          : 135,
         0x020a03,
         0.95
       )
@@ -1274,7 +1396,9 @@ class MainScene extends Phaser.Scene {
     const resultText =
       this.add.text(
         270,
-        information ? 425 : 480,
+        information
+          ? 425
+          : 480,
         title,
         {
           fontFamily:
@@ -1313,7 +1437,9 @@ class MainScene extends Phaser.Scene {
     }
 
     this.time.delayedCall(
-      information ? 2200 : 1250,
+      information
+        ? 2200
+        : 1250,
       () => {
         background.destroy();
         resultText.destroy();
@@ -1342,8 +1468,16 @@ class MainScene extends Phaser.Scene {
       this.obstacleTimer.paused = true;
     }
 
-    this.obstacles.clear(true, true);
-    this.pickups.clear(true, true);
+    this.obstacles.clear(
+      true,
+      true
+    );
+
+    this.pickups.clear(
+      true,
+      true
+    );
+
     this.bossProjectiles.clear(
       true,
       true
@@ -1351,6 +1485,10 @@ class MainScene extends Phaser.Scene {
 
     this.progressText.setText(
       "ROTA: 99%"
+    );
+
+    this.statusText.setText(
+      "UYARI: MERKÜR MUHAFIZI"
     );
 
     const warningBackground =
@@ -1387,6 +1525,13 @@ class MainScene extends Phaser.Scene {
         .setOrigin(0.5)
         .setDepth(1501);
 
+    this.cameras.main.flash(
+      500,
+      255,
+      55,
+      20
+    );
+
     this.time.delayedCall(
       1600,
       () => {
@@ -1402,6 +1547,10 @@ class MainScene extends Phaser.Scene {
     this.isBossEntering = false;
     this.isBossPhase = true;
 
+    /*
+      Oyuncunun bossu tamamlayabilmesi için
+      en az üç lazer hakkı garanti edilir.
+    */
     if (this.ammo < 3) {
       this.ammo = 3;
 
@@ -1411,8 +1560,6 @@ class MainScene extends Phaser.Scene {
       );
     }
 
-    this.bossBaseY = 475;
-
     this.boss =
       this.physics.add.image(
         650,
@@ -1420,6 +1567,7 @@ class MainScene extends Phaser.Scene {
         "mercury-boss"
       );
 
+    // Boss dikey ekran için küçültüldü.
     this.boss.setScale(0.145);
     this.boss.setDepth(18);
     this.boss.body.setAllowGravity(false);
@@ -1491,18 +1639,29 @@ class MainScene extends Phaser.Scene {
     const projectile =
       this.bossProjectiles.create(
         this.boss.x -
-          this.boss.displayWidth * 0.35,
+          this.boss.displayWidth *
+            0.35,
         this.boss.y +
-          Phaser.Math.Between(-22, 22),
+          Phaser.Math.Between(
+            -22,
+            22
+          ),
         "mercury-boss-projectile"
       );
 
     projectile.setScale(0.33);
+
     projectile.setVelocityX(
-      Phaser.Math.Between(-325, -275)
+      Phaser.Math.Between(
+        -325,
+        -275
+      )
     );
 
-    projectile.body.setAllowGravity(false);
+    projectile.body.setAllowGravity(
+      false
+    );
+
     projectile.setData(
       "hitPlayer",
       false
@@ -1529,6 +1688,7 @@ class MainScene extends Phaser.Scene {
     this.score += 300;
 
     boss.setTint(0xffffff);
+
     this.cameras.main.shake(
       170,
       0.015
@@ -1551,9 +1711,9 @@ class MainScene extends Phaser.Scene {
       this.statusText.setText(
         "BOSS HASARI: 1 / 3"
       );
-    }
-
-    if (this.bossHits === 2) {
+    } else if (
+      this.bossHits === 2
+    ) {
       boss.setTexture(
         "mercury-boss-damage-02"
       );
@@ -1561,9 +1721,7 @@ class MainScene extends Phaser.Scene {
       this.statusText.setText(
         "BOSS HASARI: 2 / 3"
       );
-    }
-
-    if (
+    } else if (
       this.bossHits >=
       this.bossRequiredHits
     ) {
@@ -1596,7 +1754,9 @@ class MainScene extends Phaser.Scene {
     projectile
   ) {
     if (
-      projectile.getData("hitPlayer") ||
+      projectile.getData(
+        "hitPlayer"
+      ) ||
       this.isQuestionOpen ||
       this.isGameOver
     ) {
@@ -1610,18 +1770,32 @@ class MainScene extends Phaser.Scene {
 
     projectile.destroy();
 
+    // Boss saldırısı da kalkanı yüzde 10 düşürür.
     this.shield = Math.max(
       0,
-      this.shield - 16
+      this.shield - 10
     );
 
     this.statusText.setText(
-      "BOSS SALDIRISI // KALKAN -16"
+      "BOSS SALDIRISI // KALKAN -10"
     );
 
     this.cameras.main.shake(
       180,
       0.014
+    );
+
+    this.player.setTint(
+      0xff4545
+    );
+
+    this.time.delayedCall(
+      180,
+      () => {
+        if (this.player.active) {
+          this.player.clearTint();
+        }
+      }
     );
 
     this.updateHUD();
@@ -1643,6 +1817,10 @@ class MainScene extends Phaser.Scene {
     projectile.destroy();
 
     this.score += 35;
+
+    this.statusText.setText(
+      "BOSS ATIŞI ENGELLENDİ"
+    );
 
     this.updateHUD();
   }
@@ -1671,13 +1849,21 @@ class MainScene extends Phaser.Scene {
         scaleX: 0.2,
         scaleY: 0.2,
         duration: 900,
+        ease: "Power2",
+
         onComplete: () => {
-          this.boss.destroy();
+          if (this.boss) {
+            this.boss.destroy();
+          }
         }
       });
     }
 
     this.isBossPhase = false;
+
+    this.statusText.setText(
+      "MERKÜR YÖRÜNGESİNE GİRİLİYOR"
+    );
 
     this.time.delayedCall(
       1100,
@@ -1694,6 +1880,11 @@ class MainScene extends Phaser.Scene {
 
     this.isMissionComplete = true;
     this.physics.world.pause();
+
+    localStorage.setItem(
+      "kozmikRotaMercuryCompleted",
+      "true"
+    );
 
     this.add.rectangle(
       270,
@@ -1713,7 +1904,9 @@ class MainScene extends Phaser.Scene {
           '"Courier New", monospace',
         fontSize: "32px",
         color: "#ffb06b",
-        align: "center"
+        align: "center",
+        stroke: "#351300",
+        strokeThickness: 4
       }
     )
       .setOrigin(0.5)
@@ -1737,10 +1930,18 @@ class MainScene extends Phaser.Scene {
       270,
       510,
       [
-        `YAKIT: ${Math.ceil(this.fuel)}%`,
-        `KALKAN: ${Math.ceil(this.shield)}%`,
-        `DOĞRU: ${this.correctAnswers}`,
-        `YANLIŞ: ${this.wrongAnswers}`,
+        `YAKIT: ${Math.ceil(
+          this.fuel
+        )}%`,
+        `KALKAN: ${Math.ceil(
+          this.shield
+        )}%`,
+        `DOĞRU: ${
+          this.correctAnswers
+        }`,
+        `YANLIŞ: ${
+          this.wrongAnswers
+        }`,
         `SKOR: ${this.score}`
       ].join("\n"),
       {
@@ -1810,12 +2011,18 @@ class MainScene extends Phaser.Scene {
       return;
     }
 
-    this.handleKeyboardMovement(delta);
+    this.handleKeyboardMovement(
+      delta
+    );
+
     this.keepPlayerInsideScreen();
     this.cleanupObjects();
 
     if (this.isBossPhase) {
-      this.updateBossMovement(time);
+      this.updateBossMovement(
+        time
+      );
+
       this.updateHUD();
       return;
     }
@@ -1830,7 +2037,8 @@ class MainScene extends Phaser.Scene {
     this.fuel = Math.max(
       0,
       this.fuel -
-        (delta / 1000) * 0.34
+        (delta / 1000) *
+          0.34
     );
 
     this.progress =
@@ -1871,7 +2079,8 @@ class MainScene extends Phaser.Scene {
     this.stars.forEach(
       (star) => {
         star.x -=
-          star.speed * multiplier;
+          star.speed *
+          multiplier;
 
         if (star.x < -5) {
           star.x = 545;
@@ -1913,11 +2122,15 @@ class MainScene extends Phaser.Scene {
     const speed =
       delta * 0.39;
 
-    if (this.cursors.up.isDown) {
+    if (
+      this.cursors.up.isDown
+    ) {
       this.player.y -= speed;
     }
 
-    if (this.cursors.down.isDown) {
+    if (
+      this.cursors.down.isDown
+    ) {
       this.player.y += speed;
     }
   }
@@ -1928,7 +2141,8 @@ class MainScene extends Phaser.Scene {
     }
 
     const halfHeight =
-      this.player.displayHeight / 2;
+      this.player.displayHeight /
+      2;
 
     this.player.y =
       Phaser.Math.Clamp(
@@ -1943,47 +2157,65 @@ class MainScene extends Phaser.Scene {
   cleanupObjects() {
     this.obstacles
       .getChildren()
-      .forEach((object) => {
-        if (
-          object.x < -150 ||
-          object.y > 1100
-        ) {
-          object.destroy();
+      .forEach(
+        (object) => {
+          if (
+            object.x < -150 ||
+            object.y > 1100
+          ) {
+            object.destroy();
+          }
         }
-      });
+      );
 
     this.pickups
       .getChildren()
-      .forEach((object) => {
-        if (object.x < -120) {
-          object.destroy();
+      .forEach(
+        (object) => {
+          if (
+            object.x < -120
+          ) {
+            object.destroy();
+          }
         }
-      });
+      );
 
     this.playerBullets
       .getChildren()
-      .forEach((object) => {
-        if (object.x > 650) {
-          object.destroy();
+      .forEach(
+        (object) => {
+          if (
+            object.x > 650
+          ) {
+            object.destroy();
+          }
         }
-      });
+      );
 
     this.bossProjectiles
       .getChildren()
-      .forEach((object) => {
-        if (object.x < -100) {
-          object.destroy();
+      .forEach(
+        (object) => {
+          if (
+            object.x < -100
+          ) {
+            object.destroy();
+          }
         }
-      });
+      );
   }
 
   updateHUD() {
     this.fuelText.setText(
-      `YAKIT: ${Math.ceil(this.fuel)}%`
+      `YAKIT: ${Math.ceil(
+        this.fuel
+      )}%`
     );
 
     this.shieldText.setText(
-      `KALKAN: ${Math.ceil(this.shield)}%`
+      `KALKAN: ${Math.ceil(
+        this.shield
+      )}%`
     );
 
     this.ammoText.setText(
@@ -2009,6 +2241,42 @@ class MainScene extends Phaser.Scene {
         0,
         1
       );
+
+    if (this.fuel <= 25) {
+      this.fuelText.setColor(
+        "#ff5e57"
+      );
+
+      this.fuelBar.setFillStyle(
+        0xff5e57
+      );
+    } else {
+      this.fuelText.setColor(
+        "#ffe066"
+      );
+
+      this.fuelBar.setFillStyle(
+        0xffe066
+      );
+    }
+
+    if (this.shield <= 25) {
+      this.shieldText.setColor(
+        "#ff5e57"
+      );
+
+      this.shieldBar.setFillStyle(
+        0xff5e57
+      );
+    } else {
+      this.shieldText.setColor(
+        "#61dafb"
+      );
+
+      this.shieldBar.setFillStyle(
+        0x61dafb
+      );
+    }
   }
 
   checkFailureState() {
@@ -2021,12 +2289,17 @@ class MainScene extends Phaser.Scene {
 
     if (!this.emergencyUsed) {
       this.emergencyUsed = true;
+
       this.fuel = 25;
       this.shield = 30;
 
       this.showLargeResult(
         "ACİL ENERJİ",
         "#ffdf63"
+      );
+
+      this.statusText.setText(
+        "ACİL SİSTEM DEVREDE"
       );
 
       this.updateHUD();
@@ -2043,6 +2316,10 @@ class MainScene extends Phaser.Scene {
 
     this.isGameOver = true;
     this.physics.world.pause();
+
+    if (this.bossFireTimer) {
+      this.bossFireTimer.paused = true;
+    }
 
     this.add.rectangle(
       270,
@@ -2137,6 +2414,7 @@ const config = {
 
   scale: {
     mode: Phaser.Scale.FIT,
+
     autoCenter:
       Phaser.Scale.CENTER_BOTH
   },
