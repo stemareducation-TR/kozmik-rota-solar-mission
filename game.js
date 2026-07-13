@@ -3,6 +3,7 @@ class MainScene extends Phaser.Scene {
     super("MainScene");
 
     this.player = null;
+    this.stars = [];
     this.dragging = false;
     this.lastPointerX = 0;
     this.lastPointerY = 0;
@@ -17,33 +18,41 @@ class MainScene extends Phaser.Scene {
 
   create() {
     this.cameras.main.setBackgroundColor("#050812");
-    this.stars = [];
 
-for (let i = 0; i < 100; i++) {
-  const star = this.add.circle(
-    Phaser.Math.Between(0, this.scale.width),
-    Phaser.Math.Between(0, this.scale.height),
-    Phaser.Math.Between(1, 2),
-    0xffffff,
-    Phaser.Math.FloatBetween(0.3, 1)
-  );
+    // Hareketli yıldız arka planı
+    for (let i = 0; i < 100; i++) {
+      const star = this.add.circle(
+        Phaser.Math.Between(0, this.scale.width),
+        Phaser.Math.Between(0, this.scale.height),
+        Phaser.Math.Between(1, 2),
+        0xffffff,
+        Phaser.Math.FloatBetween(0.3, 1)
+      );
 
-  star.speed = Phaser.Math.FloatBetween(0.5, 2);
-  this.stars.push(star);
-}
+      star.speed = Phaser.Math.FloatBetween(0.5, 2);
+      this.stars.push(star);
+    }
 
+    // Başlık
     this.add.text(24, 20, "KOZMİK ROTA: SOLAR MISSION", {
       fontFamily: "Arial",
       fontSize: "28px",
       color: "#ffffff"
     });
 
-    this.add.text(24, 58, "Altay-X'i fareyle veya parmağınla sürükle", {
-      fontFamily: "Arial",
-      fontSize: "18px",
-      color: "#9fdcff"
-    });
+    // Kontrol açıklaması
+    this.add.text(
+      24,
+      58,
+      "Altay-X'i fareyle veya parmağınla sürükle",
+      {
+        fontFamily: "Arial",
+        fontSize: "18px",
+        color: "#9fdcff"
+      }
+    );
 
+    // Oyuncu
     this.player = this.add.image(
       this.scale.width * 0.25,
       this.scale.height * 0.55,
@@ -53,12 +62,17 @@ for (let i = 0; i < 100; i++) {
     this.player.setScale(0.18);
     this.player.setOrigin(0.5);
 
+    // Referans görsel sola bakıyorsa ve oyunda sağa bakmasını istiyorsan:
+    // this.player.setFlipX(true);
+
+    // Sürükleme başlangıcı
     this.input.on("pointerdown", (pointer) => {
       this.dragging = true;
       this.lastPointerX = pointer.x;
       this.lastPointerY = pointer.y;
     });
 
+    // Sürükleme hareketi
     this.input.on("pointermove", (pointer) => {
       if (!this.dragging || !this.player) {
         return;
@@ -72,19 +86,11 @@ for (let i = 0; i < 100; i++) {
 
       this.lastPointerX = pointer.x;
       this.lastPointerY = pointer.y;
-update() {
-  for (const star of this.stars) {
-    star.x -= star.speed;
 
-    if (star.x < 0) {
-      star.x = this.scale.width;
-      star.y = Phaser.Math.Between(0, this.scale.height);
-    }
-  }
-}
       this.keepPlayerInsideScreen();
     });
 
+    // Sürükleme bitişi
     this.input.on("pointerup", () => {
       this.dragging = false;
     });
@@ -92,9 +98,31 @@ update() {
     this.input.on("pointerupoutside", () => {
       this.dragging = false;
     });
+
+    this.input.on("pointercancel", () => {
+      this.dragging = false;
+    });
+  }
+
+  update() {
+    // Yıldızları sola doğru hareket ettir
+    for (const star of this.stars) {
+      star.x -= star.speed;
+
+      // Ekranın dışına çıkan yıldızı sağdan tekrar getir
+      if (star.x < -4) {
+        star.x = this.scale.width + 4;
+        star.y = Phaser.Math.Between(0, this.scale.height);
+        star.speed = Phaser.Math.FloatBetween(0.5, 2);
+      }
+    }
   }
 
   keepPlayerInsideScreen() {
+    if (!this.player) {
+      return;
+    }
+
     const halfWidth = this.player.displayWidth / 2;
     const halfHeight = this.player.displayHeight / 2;
 
@@ -115,15 +143,20 @@ update() {
 const config = {
   type: Phaser.AUTO,
   parent: "game-container",
+
   width: 960,
   height: 540,
+
   backgroundColor: "#050812",
+
   pixelArt: true,
   roundPixels: true,
+
   scale: {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH
   },
+
   scene: MainScene
 };
 
