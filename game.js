@@ -36,7 +36,7 @@ class MainScene extends Phaser.Scene {
       "altay-x"
     );
 
-    this.player.setScale(0.35);
+    this.player.setScale(0.18);
     this.player.setOrigin(0.5);
 
     this.input.on("pointerdown", (pointer) => {
